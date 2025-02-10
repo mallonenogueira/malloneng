@@ -2,8 +2,11 @@ package com.malloneng.backend;
 
 import com.google.gson.Gson;
 import com.malloneng.backend.domain.entity.Search;
+import com.malloneng.backend.infra.repository.memory.SearchRepositoryMemory;
 import com.malloneng.backend.infra.spark.SparkRouterRegister;
 import com.malloneng.backend.presentation.rest.CrawlingController;
+
+import java.util.HashMap;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
@@ -19,6 +22,15 @@ public class Main {
         new CrawlingController(routerRegister);
 
 
-        System.out.println(new Gson().toJson(Search.create()));
+        var search = Search.create();
+
+
+        var searchRepo = new SearchRepositoryMemory(new HashMap<>());
+        searchRepo.create(search);
+        search.addUrl("http:13");
+        search.addUrl("http:asd");
+        searchRepo.update(Search.create());
+
+        System.out.println(new Gson().toJson(searchRepo.findById(search.getId()).get()));
     }
 }

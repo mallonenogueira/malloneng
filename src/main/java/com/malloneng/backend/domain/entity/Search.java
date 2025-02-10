@@ -7,12 +7,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Search {
-    private final String id;
-    private SearchStatus status;
+    private final Id id;
     private final Set<String> urls;
+    private SearchStatus status;
 
     private Search(
-            String id, SearchStatus status, Set<String> urls) {
+            Id id, SearchStatus status, Set<String> urls) {
         this.id = id;
         this.status = status;
         this.urls = urls;
@@ -20,7 +20,7 @@ public class Search {
 
     public static Search create() {
         return new Search(
-                Id.create().getValue(),
+                Id.create(),
                 SearchStatus.ACTIVE,
                 new HashSet<>()
         );
@@ -32,13 +32,13 @@ public class Search {
             Set<String> urls
     ) {
         return new Search(
-                id,
+                Id.restore(id),
                 status,
                 urls
         );
     }
 
-    public void finish() throws RuntimeException {
+    public void finish() {
         if (!SearchStatus.ACTIVE.equals(this.status)) {
             // TODO: Adicionar Exception especifica
             throw new RuntimeException("Pesquisa já concluida");
@@ -49,5 +49,17 @@ public class Search {
 
     public void addUrl(String url) {
         this.urls.add(url);
+    }
+
+    public Id getId() {
+        return id;
+    }
+
+    public Set<String> getUrls() {
+        return urls;
+    }
+
+    public SearchStatus getStatus() {
+        return status;
     }
 }
