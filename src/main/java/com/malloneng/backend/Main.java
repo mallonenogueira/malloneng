@@ -1,5 +1,7 @@
 package com.malloneng.backend;
 
+import com.google.gson.Gson;
+import com.malloneng.backend.domain.entity.Search;
 import com.malloneng.backend.infra.spark.SparkRouterRegister;
 import com.malloneng.backend.presentation.rest.CrawlingController;
 
@@ -15,5 +17,8 @@ public class Main {
 
         var routerRegister = new SparkRouterRegister();
         new CrawlingController(routerRegister);
+
+
+        System.out.println(new Gson().toJson(Search.create()));
     }
 }
