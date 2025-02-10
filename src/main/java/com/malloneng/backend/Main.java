@@ -1,8 +1,6 @@
 package com.malloneng.backend;
 
 import com.malloneng.backend.infra.spark.SparkRouterRegister;
-import com.malloneng.backend.presentation.http.HttpMethod;
-import com.malloneng.backend.presentation.http.HttpRoute;
 import com.malloneng.backend.presentation.rest.CrawlingController;
 
 import static spark.Spark.get;
@@ -16,17 +14,6 @@ public class Main {
                 "POST /crawl" + System.lineSeparator() + req.body());
 
         var routerRegister = new SparkRouterRegister();
-        var crawlingController = new CrawlingController();
-
-        routerRegister
-                .register(HttpRoute.create(
-                        HttpMethod.GET,
-                        "/crawl2/:id",
-                        crawlingController::list
-                )).register(HttpRoute.create(
-                        HttpMethod.POST,
-                        "/crawl2",
-                        crawlingController::create
-                ));
+        new CrawlingController(routerRegister);
     }
 }

@@ -1,5 +1,6 @@
 package com.malloneng.backend.infra.spark;
 
+import com.malloneng.backend.presentation.http.HttpHandler;
 import com.malloneng.backend.presentation.http.HttpMethod;
 import com.malloneng.backend.presentation.http.HttpRoute;
 import com.malloneng.backend.presentation.http.HttpRouterRegister;
@@ -20,5 +21,14 @@ public class SparkRouterRegister implements HttpRouterRegister {
         }
 
         return this;
+    }
+
+    @Override
+    public <R, B> HttpRouterRegister register(HttpMethod method, String endpoint, HttpHandler<B, R> handler) {
+        return this.register(HttpRoute.create(
+                method,
+                endpoint,
+                handler
+        ));
     }
 }
