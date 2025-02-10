@@ -18,14 +18,11 @@ public class Main {
         post("/crawl", (req, res) ->
                 "POST /crawl" + System.lineSeparator() + req.body());
 
+        var searchRepo = new SearchRepositoryMemory(new HashMap<>());
         var routerRegister = new SparkRouterRegister();
-        new CrawlingController(routerRegister);
-
+        new CrawlingController().register(routerRegister);
 
         var search = Search.create();
-
-
-        var searchRepo = new SearchRepositoryMemory(new HashMap<>());
         searchRepo.create(search);
         search.addUrl("http:13");
         search.addUrl("http:asd");
