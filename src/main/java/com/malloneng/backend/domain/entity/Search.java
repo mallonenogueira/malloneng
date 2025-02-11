@@ -1,6 +1,5 @@
 package com.malloneng.backend.domain.entity;
 
-import com.malloneng.backend.domain.SearchStatus;
 import com.malloneng.backend.domain.value.Id;
 
 import java.util.HashSet;
@@ -48,6 +47,11 @@ public class Search {
     }
 
     public void addUrl(String url) {
+        if (!SearchStatus.ACTIVE.equals(this.status)) {
+            // TODO: Adicionar Exception especifica
+            throw new RuntimeException("Pesquisa já concluida");
+        }
+
         this.urls.add(url);
     }
 

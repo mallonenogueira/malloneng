@@ -1,4 +1,4 @@
-package com.malloneng.backend.domain;
+package com.malloneng.backend.domain.entity;
 
 public enum SearchStatus {
     ACTIVE("active"),
