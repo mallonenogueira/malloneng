@@ -2,7 +2,8 @@ package com.malloneng.backend.infra.repository;
 
 import com.malloneng.backend.domain.entity.Search;
 import com.malloneng.backend.domain.entity.SearchStatus;
-import com.malloneng.backend.infra.repository.memory.SearchRepositoryMemory;
+import com.malloneng.backend.domain.stub.StubSearch;
+import com.malloneng.backend.infra.repository.memory.MemorySearchRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -14,8 +15,8 @@ class MemorySearchRepositoryTest {
 
     @Test
     void shouldSaveNewSearch() {
-        var searchRepository = new SearchRepositoryMemory(new HashMap<>());
-        var search = Search.create();
+        var searchRepository = new MemorySearchRepository(new HashMap<>());
+        var search = StubSearch.aSearch();
         searchRepository.create(search);
         var dbSearch = searchRepository.findById(search.getId()).orElseThrow();
         assertEquals(dbSearch.getId(), search.getId());
@@ -24,11 +25,16 @@ class MemorySearchRepositoryTest {
 
     @Test
     void shouldUpdateSearch() {
-        var searchRepository = new SearchRepositoryMemory(new HashMap<>());
-        var newSearch = Search.create();
+        var searchRepository = new MemorySearchRepository(new HashMap<>());
+        var newSearch = StubSearch.aSearch();
         searchRepository.create(newSearch);
 
-        var search = Search.restore(newSearch.getId().getValue(), newSearch.getStatus(), newSearch.getUrls());
+        var search = Search.restore(
+                newSearch.getId().getValue(),
+                newSearch.getStatus(),
+                newSearch.getUrls(),
+                newSearch.getKeyword()
+        );
         search.finish();
         searchRepository.update(search);
 
@@ -38,15 +44,15 @@ class MemorySearchRepositoryTest {
 
     @Test
     void shouldThrowNotFoundError() {
-        var searchRepository = new SearchRepositoryMemory(new HashMap<>());
-        var search = Search.create();
+        var searchRepository = new MemorySearchRepository(new HashMap<>());
+        var search = StubSearch.aSearch();
         assertThrows(RuntimeException.class, () -> searchRepository.update(search));
     }
 
     @Test
     void shouldThrowAlreadyExists() {
-        var searchRepository = new SearchRepositoryMemory(new HashMap<>());
-        var search = Search.create();
+        var searchRepository = new MemorySearchRepository(new HashMap<>());
+        var search = StubSearch.aSearch();
         searchRepository.create(search);
         assertThrows(RuntimeException.class, () -> searchRepository.create(search));
     }
