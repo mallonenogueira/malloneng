@@ -25,7 +25,7 @@ public class Main {
         var eventEmitter = config.getEventEmitter();
         var createSearchUseCase = new CreateSearchUseCase(searchRepository, eventEmitter::emit);
 
-        new SearchController(createSearchUseCase,searchRepository)
+        new SearchController(createSearchUseCase, searchRepository)
                 .register(routerRegister);
     }
 
@@ -34,7 +34,11 @@ public class Main {
 
         new MemoryEventEmitter(env.getNumThreadEvents()).subscribe(Event.SEARCH_CREATED, event -> {
             if (event.getData() instanceof Id id) {
-                new CrawlingUrlUseCase(env.getBaseUrl(), searchRepository).execute(id);
+                try {
+                    new CrawlingUrlUseCase(env.getBaseUrl(), searchRepository).execute(id);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
     }

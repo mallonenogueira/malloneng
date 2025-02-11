@@ -1,6 +1,5 @@
 package com.malloneng.backend.domain.entity;
 
-import com.malloneng.backend.domain.exception.ApplicationException;
 import com.malloneng.backend.domain.exception.InvalidKeywordsException;
 import com.malloneng.backend.domain.exception.SearchDoneException;
 import com.malloneng.backend.domain.value.Id;
