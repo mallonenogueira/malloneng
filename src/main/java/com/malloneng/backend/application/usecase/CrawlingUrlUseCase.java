@@ -16,26 +16,35 @@ import java.util.regex.Pattern;
 public class CrawlingUrlUseCase {
     private final String startUrl;
     private final SearchRepository searchRepository;
-    private final List<String> links;
     private final Set<String> visited;
 
     public CrawlingUrlUseCase(String startUrl, SearchRepository searchRepository) {
         this.startUrl = startUrl;
         this.searchRepository = searchRepository;
-        this.links = new ArrayList<>();
         this.visited = new HashSet<>();
-        links.add(startUrl);
     }
 
     public void execute(Id searchId) {
         var search = this.searchRepository
                 .findById(searchId)
                 .orElseThrow(SearchNotFoundException::new);
-        var listIterator = links.listIterator();
 
-        while(listIterator.hasNext()) {
-            var link = listIterator.next();
+        Queue<String> links = new LinkedList<>();
+        links.add(this.startUrl);
+
+        // TODO: adicionar multiplas threads
+
+        while (!links.isEmpty()) {
+            var link = links.poll();
+
+            if (this.visited.contains(link)) {
+                continue;
+            }
+
+            System.out.println("Visitando:" + link);
+
             var result = doCrawl(search.getKeyword(), link);
+            this.visited.add(link);
 
             if (result.hasKeyword()) {
                 //TODO: Criar addUrl no repositório
@@ -43,20 +52,13 @@ public class CrawlingUrlUseCase {
                 this.searchRepository.update(search);
             }
 
-            visited.add(link);
-
-            List<String> newLinks = result.links()
+            result.links()
                     .stream()
-                    .filter(l -> !visited.contains(l))
                     .filter(newLink -> this.isSameDomain(newLink, this.startUrl))
-                    .toList();
-
-            newLinks.forEach(l -> {
-                listIterator.add(l);
-                listIterator.previous();
-            });
+                    .filter(newLink -> !this.visited.contains(newLink))
+                    .forEach(links::offer);
         }
-
+        System.out.println("Acabou..");
         search.finish();
         this.searchRepository.update(search);
     }
@@ -67,7 +69,7 @@ public class CrawlingUrlUseCase {
 
             return new Result(
                     this.hasKeyword(keyword, content),
-                    this.extractLinks(content)
+                    this.extractLinks(content, url)
             );
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -77,10 +79,17 @@ public class CrawlingUrlUseCase {
     }
 
     private boolean isSameDomain(String url1, String url2) {
-        return URI
-                .create(url1)
-                .getHost()
-                .equalsIgnoreCase(URI.create(url2).getHost());
+        try {
+            return URI
+                    .create(url1)
+                    .getHost()
+                    .equalsIgnoreCase(URI.create(url2).getHost());
+        } catch (Exception e) {
+            System.out.println("Erro no link: " + url1);
+            System.out.println("Erro no link: " + url2);
+            return false;
+        }
+
     }
 
     private boolean hasKeyword(String keyword, String content) {
@@ -89,33 +98,28 @@ public class CrawlingUrlUseCase {
                 .find();
     }
 
-    private List<String> extractLinks(String content) {
+    private Set<String> extractLinks(String content, String sourceUri) {
         String urlRegex = "<a\\s+[^>]*href=[\"']([^\"'#]+)[\"']";
-        List<String> contentLinks = new ArrayList<>();
+        var contentLinks = new HashSet<String>();
         Pattern pattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE);
         Matcher urlMatcher = pattern.matcher(content);
 
-
         while (urlMatcher.find()) {
-            String link = urlMatcher.group(1).trim();
+            var link = urlMatcher.group(1).trim();
 
-            if (URI.create(link).isAbsolute()) {
-                contentLinks.add(link);
-            } else {
-                var linkBase = URI.create("http://hiring.axreng.com");
-                contentLinks.add(linkBase.resolve(URI.create(link)).toString());
+            try {
+                var uri = URI.create(link);
+
+                if (!uri.isAbsolute()) {
+                    var linkBase = URI.create(sourceUri);
+                    contentLinks.add(linkBase.resolve(uri).toString());
+
+                } else if (!"mailto".equals(uri.getScheme())) {
+                    contentLinks.add(link);
+                }
+            } catch (IllegalArgumentException exception) {
+                System.out.println("URI Inválida: " + link);
             }
-            //TODO: file links
-            //        String domain = this.url.getProtocol() + "://" + this.url.getHost();
-//            if (link.startsWith("/")) {
-//                link = baseDomain + link;
-//            }
-
-
-            //OLD REGEX
-            //"((https?|ftp|gopher|telnet|file):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)"
-//            contentLinks.add(content.substring(urlMatcher.start(0), urlMatcher.end(0)));
-
         }
 
         return contentLinks;
@@ -125,9 +129,12 @@ public class CrawlingUrlUseCase {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        //TODO: throw Error
+
         return response.body();
     }
 
-    private static record Result(boolean hasKeyword, List<String> links) {
+    private static record Result(boolean hasKeyword, Set<String> links) {
     }
 }

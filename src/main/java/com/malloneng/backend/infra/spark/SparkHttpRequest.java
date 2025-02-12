@@ -1,6 +1,7 @@
 package com.malloneng.backend.infra.spark;
 
 import com.google.gson.Gson;
+import com.malloneng.backend.domain.exception.ApplicationException;
 import com.malloneng.backend.presentation.http.HttpRequest;
 import spark.Request;
 
@@ -19,6 +20,12 @@ public class SparkHttpRequest<T> implements HttpRequest<T> {
 
     @Override
     public T getBody(Class<T> classOfT) {
-        return new Gson().fromJson(this.request.body(), classOfT);
+        var body = this.request.body();
+
+        if (body == null || body.isEmpty()) {
+            throw new ApplicationException("Request body é obrigatório.");
+        }
+
+        return new Gson().fromJson(body, classOfT);
     }
 }

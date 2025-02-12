@@ -32,11 +32,14 @@ public class Main {
     private static void createEventSubscribe(Configuration config, SearchRepository searchRepository) {
         var env = new Env();
 
+        //TODO: create subscriber type
+        //TODO: move to presentation layer
         new MemoryEventEmitter(env.getNumThreadEvents()).subscribe(Event.SEARCH_CREATED, event -> {
             if (event.getData() instanceof Id id) {
                 try {
                     new CrawlingUrlUseCase(env.getBaseUrl(), searchRepository).execute(id);
                 } catch (Exception e) {
+                    //TODO: log
                     e.printStackTrace();
                 }
             }
