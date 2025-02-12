@@ -21,12 +21,6 @@ import java.net.http.HttpClient;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Configuration {
-    private final Env env;
-
-    public Configuration(Env env) {
-        this.env = env;
-    }
-
     public Gson getGson() {
         return new GsonBuilder()
                 .registerTypeAdapter(Id.class, new IdSerializer())
@@ -42,12 +36,12 @@ public class Configuration {
         return new MemorySearchRepository(new ConcurrentHashMap<>());
     }
 
-    public EventEmitter getEventEmitter() {
-        return new MemoryEventEmitter(this.env.getNumThreadEvents());
+    public EventEmitter getEventEmitter(Env env) {
+        return new MemoryEventEmitter(env.getNumThreadEvents());
     }
 
-    public EventSubscriber getEventSubscriber() {
-        return new MemoryEventEmitter(this.env.getNumThreadEvents());
+    public EventSubscriber getEventSubscriber(Env env) {
+        return new MemoryEventEmitter(env.getNumThreadEvents());
     }
 
     public HttpClient getHttpClient() {

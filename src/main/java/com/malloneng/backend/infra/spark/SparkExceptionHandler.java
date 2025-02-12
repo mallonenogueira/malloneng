@@ -52,6 +52,7 @@ public class SparkExceptionHandler {
             response.status(500);
             // TODO: log
             e.printStackTrace();
+
             response.body(this.gson.toJson(new Response(
                     "Ocorreu algo inesperado.",
                     "InternalError",

@@ -8,9 +8,11 @@ import spark.Request;
 public class SparkHttpRequest<T> implements HttpRequest<T> {
 
     private final Request request;
+    private final Gson gson;
 
-    public SparkHttpRequest(Request request) {
+    public SparkHttpRequest(Request request, Gson gson) {
         this.request = request;
+        this.gson = gson;
     }
 
     @Override
@@ -26,6 +28,6 @@ public class SparkHttpRequest<T> implements HttpRequest<T> {
             throw new ApplicationException("Request body é obrigatório.");
         }
 
-        return new Gson().fromJson(body, classOfT);
+        return gson.fromJson(body, classOfT);
     }
 }

@@ -23,7 +23,7 @@ public class SparkRouterRegister implements HttpRouterRegister {
     public <B, R> HttpRouterRegister register(HttpRoute<B, R> route) {
         Route handler = (req, res) -> {
             res.type(SparkRouterRegister.ACCEPT_TYPE_JSON);
-            return route.handler.execute(new SparkHttpRequest<>(req));
+            return route.handler.execute(new SparkHttpRequest<>(req, gson));
         };
 
         if (route.method.equals(HttpMethod.GET)) {

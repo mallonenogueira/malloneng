@@ -22,11 +22,11 @@ public class SearchController {
 
     public void register(HttpRouterRegister routerRegister) {
         routerRegister
-                .register(HttpMethod.GET, "/crawl/:id", this::list)
+                .register(HttpMethod.GET, "/crawl/:id", this::find)
                 .register(HttpMethod.POST, "/crawl", this::create);
     }
 
-    public SearchOutput list(HttpRequest<String> request) {
+    public SearchOutput find(HttpRequest<String> request) {
         var searchOptional = this.searchRepository.findById(Id.restore(request.getParam("id")));
 
         return searchOptional.map(search -> new SearchOutput(
