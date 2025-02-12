@@ -1,13 +1,10 @@
 package com.malloneng.backend;
 
 import com.malloneng.backend.application.repository.SearchRepository;
-import com.malloneng.backend.application.usecase.CrawlingUrlUseCase;
 import com.malloneng.backend.application.usecase.CreateSearchUseCase;
-import com.malloneng.backend.domain.event.Event;
-import com.malloneng.backend.domain.value.Id;
 import com.malloneng.backend.infra.Configuration;
 import com.malloneng.backend.infra.Env;
-import com.malloneng.backend.infra.messaging.MemoryEventEmitter;
+import com.malloneng.backend.presentation.messaging.SearchSubscriber;
 import com.malloneng.backend.presentation.rest.SearchController;
 
 public class Main {
@@ -30,19 +27,11 @@ public class Main {
     }
 
     private static void createEventSubscribe(Configuration config, SearchRepository searchRepository) {
-        var env = new Env();
-
-        //TODO: create subscriber type
-        //TODO: move to presentation layer
-        new MemoryEventEmitter(env.getNumThreadEvents()).subscribe(Event.SEARCH_CREATED, event -> {
-            if (event.getData() instanceof Id id) {
-                try {
-                    new CrawlingUrlUseCase(env.getBaseUrl(), searchRepository).execute(id);
-                } catch (Exception e) {
-                    //TODO: log
-                    e.printStackTrace();
-                }
-            }
-        });
+        new SearchSubscriber(
+                config.getEventSubscriber(),
+                searchRepository,
+                config.getFetchContentService(),
+                config.getCrawlerService()
+        ).subscribe(new Env().getBaseUrl());
     }
 }

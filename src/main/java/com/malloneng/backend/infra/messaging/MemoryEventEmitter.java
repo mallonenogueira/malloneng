@@ -3,6 +3,7 @@ package com.malloneng.backend.infra.messaging;
 import com.malloneng.backend.domain.event.DomainEvent;
 import com.malloneng.backend.domain.event.Event;
 import com.malloneng.backend.domain.event.EventEmitter;
+import com.malloneng.backend.presentation.messaging.EventSubscriber;
 
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -11,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-public class MemoryEventEmitter implements EventEmitter {
+public class MemoryEventEmitter implements EventEmitter, EventSubscriber {
     private static final EnumMap<Event, Set<Consumer<DomainEvent>>> subscribers = new EnumMap<>(Event.class);
     private final ExecutorService executor;
 
@@ -28,9 +29,7 @@ public class MemoryEventEmitter implements EventEmitter {
 
         if (eventSubscribers != null) {
             for (Consumer<DomainEvent> subscriber : eventSubscribers) {
-                executor.submit(() -> {
-                    subscriber.accept(event);
-                });
+                executor.submit(() -> subscriber.accept(event));
             }
         }
     }

@@ -7,7 +7,17 @@ public class Env {
         var numThreadEvent = System.getenv("NUM_THREAD_EVENT");
 
         if (numThreadEvent == null) {
-            return 10;
+            return 5;
+        }
+
+        return Integer.parseInt(numThreadEvent);
+    }
+
+    public int getNumThreadRequests() {
+        var numThreadEvent = System.getenv("NUM_THREAD_REQUESTS");
+
+        if (numThreadEvent == null) {
+            return 20;
         }
 
         return Integer.parseInt(numThreadEvent);
