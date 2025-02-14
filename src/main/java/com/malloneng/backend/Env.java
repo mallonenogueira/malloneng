@@ -1,4 +1,4 @@
-package com.malloneng.backend.infra;
+package com.malloneng.backend;
 
 public class Env {
     public int getNumThreadEvents() {
@@ -20,6 +20,18 @@ public class Env {
 
         return Integer.parseInt(numThreadEvent);
     }
+
+
+    public int getTimeout() {
+        var timeout = System.getenv("TIMEOUT_SECONDS_CRAWLER");
+
+        if (timeout == null) {
+            return 30;
+        }
+
+        return Integer.parseInt(timeout);
+    }
+
 
     public String getBaseUrl() {
         return System.getenv("BASE_URL");

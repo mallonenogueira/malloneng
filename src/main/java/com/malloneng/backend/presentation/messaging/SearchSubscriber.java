@@ -6,7 +6,7 @@ import com.malloneng.backend.application.service.FetchContentService;
 import com.malloneng.backend.application.usecase.CrawlSearchUseCase;
 import com.malloneng.backend.domain.event.Event;
 import com.malloneng.backend.domain.value.Id;
-import com.malloneng.backend.infra.Env;
+import com.malloneng.backend.Env;
 
 public class SearchSubscriber {
     private final EventSubscriber eventSubscriber;
@@ -27,10 +27,10 @@ public class SearchSubscriber {
 
     public void subscribe(String baseUrl) {
         eventSubscriber.subscribe(Event.SEARCH_CREATED, event -> {
-            if (event.getData() instanceof Id id) {
+            if (event.getData() instanceof Id) {
                 try {
                     new CrawlSearchUseCase(
-                            new Env().getNumThreadRequests(), baseUrl, searchRepository, fetchContentService, crawler).execute(id);
+                            new Env().getNumThreadRequests(), baseUrl, searchRepository, fetchContentService, crawler).execute((Id) event.getData());
                 } catch (Exception e) {
                     //TODO: log
                     e.printStackTrace();

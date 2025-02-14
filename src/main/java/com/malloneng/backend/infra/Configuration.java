@@ -2,6 +2,7 @@ package com.malloneng.backend.infra;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.malloneng.backend.Env;
 import com.malloneng.backend.application.repository.SearchRepository;
 import com.malloneng.backend.application.service.CrawlerService;
 import com.malloneng.backend.application.service.FetchContentService;
@@ -48,8 +49,8 @@ public class Configuration {
         return HttpClient.newHttpClient();
     }
 
-    public FetchContentService getFetchContentService() {
-        return new HttpClientFetchContentService(this.getHttpClient());
+    public FetchContentService getFetchContentService(Env env) {
+        return new HttpClientFetchContentService(this.getHttpClient(), env.getTimeout());
     }
 
     public CrawlerService getCrawlerService() {

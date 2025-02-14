@@ -9,6 +9,7 @@ import com.malloneng.backend.domain.value.Id;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.http.HttpTimeoutException;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -63,19 +64,16 @@ public class CrawlSearchUseCase {
     }
 
     private CompletableFuture<Void> crawl(Search search, URI currentUrl) {
-        if (!visited.add(currentUrl)) return CompletableFuture.completedFuture(null);
+        if (!visited.add(currentUrl)) {
+            return CompletableFuture.completedFuture(null);
+        }
 
         return fetchContentFromSite(currentUrl)
-                .thenApplyAsync(content -> this
-                        .proccessContentSearch(search, currentUrl, content).stream()
-                        .filter(link -> !visited.contains(link))
-                        .collect(Collectors.toSet()
-                        ), executor)
+                .thenApplyAsync(content -> this.proccessContentSearch(search, currentUrl, content), executor)
                 .thenComposeAsync(nextUrls -> CompletableFuture.allOf(
                         nextUrls.stream()
                                 .map(link -> crawl(search, link))
-                                .toList()
-                                .toArray(new CompletableFuture[0])
+                                .toArray(CompletableFuture[]::new)
                 ), executor);
     }
 
@@ -91,6 +89,7 @@ public class CrawlSearchUseCase {
 
         return links.stream()
                 .filter(link -> this.isSameDomain(link, starterUrl))
+                .filter(link -> !visited.contains(link))
                 .collect(Collectors.toSet());
     }
 
@@ -98,6 +97,10 @@ public class CrawlSearchUseCase {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return fetchContentService.fetch(uri);
+            } catch (HttpTimeoutException e) {
+                // TODO: Log
+                System.out.println("Timeout"+ uri);
+                return "";
             } catch (IOException e) {
                 // TODO: Log
                 return "";
@@ -110,7 +113,7 @@ public class CrawlSearchUseCase {
 
     public boolean isSameDomain(URI uri1, URI uri2) {
         return uri1.getHost() != null &&
-               uri2.getHost() != null &&
-               uri1.getHost().equalsIgnoreCase(uri2.getHost());
+                uri2.getHost() != null &&
+                uri1.getHost().equalsIgnoreCase(uri2.getHost());
     }
 }

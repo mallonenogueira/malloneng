@@ -3,14 +3,19 @@ package com.malloneng.backend;
 import com.malloneng.backend.application.repository.SearchRepository;
 import com.malloneng.backend.application.usecase.CreateSearchUseCase;
 import com.malloneng.backend.infra.Configuration;
-import com.malloneng.backend.infra.Env;
 import com.malloneng.backend.presentation.messaging.SearchSubscriber;
 import com.malloneng.backend.presentation.rest.SearchController;
 import org.eclipse.jetty.util.StringUtil;
 
 public class Main {
     public static void main(String[] args) {
-        if (Main.verifyEnv()) return;
+        if (Main.verifyEnv()) {
+            System.out.println("Adicione Env: BASE_URL");
+
+            return;
+        }
+
+        System.out.println("BASE_URL: " + new Env().getBaseUrl());
 
         var config = new Configuration();
         var searchRepository = config.getSearchRepository();
@@ -33,15 +38,13 @@ public class Main {
         new SearchSubscriber(
                 config.getEventSubscriber(new Env()),
                 searchRepository,
-                config.getFetchContentService(),
+                config.getFetchContentService(new Env()),
                 config.getCrawlerService()
         ).subscribe(new Env().getBaseUrl());
     }
 
     private static boolean verifyEnv() {
         var baseUrl = new Env().getBaseUrl();
-
-        System.out.println("Adicione Env: BASE_URL");
 
         return StringUtil.isEmpty(baseUrl);
     }
