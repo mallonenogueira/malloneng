@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.malloneng.backend.domain.exception.ApplicationException;
 import com.malloneng.backend.domain.exception.NotFoundException;
 
+import java.util.Objects;
+
 import static spark.Spark.exception;
 import static spark.Spark.notFound;
 
@@ -61,6 +63,51 @@ public class SparkExceptionHandler {
         });
     }
 
-    private static record Response(String message, String type, int statusCode) {
-    }
+    private static final class Response {
+        private final String message;
+        private final String type;
+        private final int statusCode;
+
+        private Response(String message, String type, int statusCode) {
+            this.message = message;
+            this.type = type;
+            this.statusCode = statusCode;
+        }
+
+        public String message() {
+            return message;
+        }
+
+        public String type() {
+            return type;
+        }
+
+        public int statusCode() {
+            return statusCode;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null || obj.getClass() != this.getClass()) return false;
+            var that = (Response) obj;
+            return Objects.equals(this.message, that.message) &&
+                    Objects.equals(this.type, that.type) &&
+                    this.statusCode == that.statusCode;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(message, type, statusCode);
+        }
+
+        @Override
+        public String toString() {
+            return "Response[" +
+                    "message=" + message + ", " +
+                    "type=" + type + ", " +
+                    "statusCode=" + statusCode + ']';
+        }
+
+        }
 }
